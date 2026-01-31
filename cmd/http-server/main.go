@@ -41,7 +41,6 @@ func parseArgs() (*Options, error) {
 	port := flagSet.IntP("port", "p", 4020, "The port to listen on.")
 	address := flagSet.IPP("address", "a", nil, "The address to listen on. (Default is all address)")
 
-	fmt.Println(len(os.Args))
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
 		return nil, err
