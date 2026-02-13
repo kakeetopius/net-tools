@@ -6,6 +6,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/google/gopacket"
@@ -23,7 +25,16 @@ func Spoof(target net.IP, targetMac net.HardwareAddr, source net.IP, sleepDurati
 	}
 	fmt.Printf("Spoofing host %v on interface %v\n", target.String(), iface.Name)
 
-	err = sendArpPacket(context.Background(), iface, &source, &target, &targetMac, sleepDuration)
+	notifyChan := make(chan struct{})
+	go awaitSignal(notifyChan)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		<-notifyChan
+		cancel()
+	}()
+
+	err = sendArpPackets(ctx, iface, &source, &target, &targetMac, sleepDuration)
 	if err != nil {
 		return err
 	}
@@ -55,7 +66,7 @@ func getIfaceByIP(IPAddr net.IP) (*net.Interface, error) {
 	return nil, fmt.Errorf("no interface connected to that network")
 }
 
-func sendArpPacket(ctx context.Context, iface *net.Interface, srcIP *net.IP, dstIP *net.IP, dstMac *net.HardwareAddr, sleepDuration time.Duration) error {
+func sendArpPackets(ctx context.Context, iface *net.Interface, srcIP *net.IP, dstIP *net.IP, dstMac *net.HardwareAddr, sleepDuration time.Duration) error {
 	sockfd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_RAW, Htons(unix.ETH_P_ARP))
 	if err != nil {
 		return err
@@ -107,6 +118,7 @@ func sendArpPacket(ctx context.Context, iface *net.Interface, srcIP *net.IP, dst
 	for {
 		select {
 		case <-ctx.Done():
+			area.Stop()
 			return nil
 		default:
 			err = unix.Sendto(sockfd, packetBytes, 0, sockAddr)
@@ -124,4 +136,14 @@ func Htons(num int) int {
 	var b [4]byte
 	binary.BigEndian.PutUint32(b[:], uint32(num))
 	return int(binary.BigEndian.Uint32(b[:]))
+}
+
+func awaitSignal(notifyChan chan struct{}) {
+	signalChan := make(chan os.Signal, 1)
+
+	signal.Notify(signalChan, os.Interrupt)
+
+	<-signalChan
+	fmt.Printf("\n\nTotal Packets Sent: %v\n", packetCount)
+	notifyChan <- struct{}{}
 }

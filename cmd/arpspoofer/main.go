@@ -31,7 +31,6 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v", err)
 	}
-	fmt.Println("We are spoofers!!")
 }
 
 func parseArgs() (*Options, error) {
