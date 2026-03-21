@@ -9,6 +9,7 @@ net-tools is a collection of small, single-purpose networking utilities. Each to
 - **mac-changer**: Change the MAC address of a network interface.
 - **mail-client**: Send emails from the command line.
 - **arpspoofer**: Perform ARP spoofing on a local network.
+- **mac-vendor-lookup**: Lookup device vendors based on their mac addresses.
 - **Extensible**: Easily add more networking utilities in the future.
 
 ## Installation
