@@ -50,6 +50,3 @@ Contributions are welcome! Feel free to submit pull requests for new utilities o
 
 ## License
 MIT License. See [LICENSE](LICENSE) for details.
-```
-
-```
