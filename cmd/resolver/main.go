@@ -9,6 +9,12 @@ import (
 	"github.com/spf13/pflag"
 )
 
+type Result struct {
+	DomainName string
+	Addresses  []string
+	Err        error
+}
+
 func main() {
 	names, err := parseArgs()
 	if err != nil {
@@ -23,29 +29,34 @@ func main() {
 	printResults(results)
 }
 
-func resolve(queries []string) (map[string][]string, error) {
+func resolve(queries []string) ([]Result, error) {
 	resolver := net.Resolver{
 		PreferGo: true,
 	}
-	results := make(map[string][]string)
+	results := make([]Result, 0, len(queries))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	for _, name := range queries {
-		hostNames, err := resolver.LookupHost(ctx, name)
-		if err != nil {
-			return nil, err
-		}
-		results[name] = hostNames
+		addresses, err := resolver.LookupHost(ctx, name)
+		results = append(results, Result{
+			DomainName: name,
+			Addresses:  addresses,
+			Err:        err,
+		})
 	}
 	return results, nil
 }
 
-func printResults(results map[string][]string) {
-	for name, ips := range results {
-		fmt.Printf("Results for: %v\n", name)
-		for _, ip := range ips {
+func printResults(results []Result) {
+	for _, result := range results {
+		fmt.Printf("Results for: %v\n", result.DomainName)
+		if result.Err != nil {
+			fmt.Printf("Got Error: %v\n\n", result.Err)
+			continue
+		}
+		for _, ip := range result.Addresses {
 			fmt.Println(ip)
 		}
 		fmt.Println()
