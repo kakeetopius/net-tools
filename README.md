@@ -13,18 +13,21 @@ net-tools is a collection of small, single-purpose networking utilities. Each to
 
 ## Installation
 
-Clone the repository and build the tools:
+Clone the repository:
 
 ```sh
 git clone https://github.com/kakeetopius/net-tools.git
 cd net-tools
 ```
+
 Build a particular tool:
 
 ```sh
 go build ./cmd/tool_name
 ```
-For Example
+
+For Example:
+
 ```sh
 go build ./cmd/http-server
 ```
@@ -53,4 +56,5 @@ Refer to each tool's `-h` or `--help` flag for usage instructions:
 Contributions are welcome! Feel free to submit pull requests for new utilities or improvements to existing ones.
 
 ## License
+
 MIT License. See [LICENSE](LICENSE) for details.
