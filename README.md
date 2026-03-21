@@ -32,6 +32,12 @@ For Example:
 go build ./cmd/http-server
 ```
 
+Or just install straight from github without manually cloning using go install
+
+```sh
+go install github.com/kakeetopius/net-tools/cmd/net_tool_name@latest
+```
+
 ## Usage
 
 Each tool is a standalone command-line application. For example, to start the HTTP server:
