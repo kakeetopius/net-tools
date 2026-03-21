@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/endobit/oui"
+	"github.com/kakeetopius/net-tools/internal/util"
 	"github.com/pterm/pterm"
 	"github.com/spf13/pflag"
 )
@@ -98,6 +99,8 @@ func printResults(results []Result, opts Options) error {
 func parseArgs() ([]string, Options, error) {
 	flagSet := pflag.NewFlagSet("mvl", pflag.ExitOnError)
 	json := flagSet.BoolP("json", "j", false, "Output the results in json form")
+	flagSet.Usage = util.UsageFunc("mvl", "", flagSet.FlagUsages())
+
 	err := flagSet.Parse(os.Args[1:])
 	return flagSet.Args(), Options{PrintJSON: *json}, err
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/kakeetopius/net-tools/internal/util"
 	"github.com/spf13/pflag"
 	"github.com/wneessen/go-mail"
 )
@@ -44,6 +45,7 @@ func getParams() (*Options, error) {
 	subject := flagSet.StringP("subject", "s", "", "The Subject of the Mail")
 	body := flagSet.StringP("message", "m", "", "The message to send in e-mail")
 
+	flagSet.Usage = util.UsageFunc("mail-client", "", flagSet.FlagUsages())
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
 		return nil, err

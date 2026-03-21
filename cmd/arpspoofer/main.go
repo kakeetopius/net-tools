@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/kakeetopius/net-tools/internal/util"
 	"github.com/kakeetopius/net-tools/pkg/arpspoofer"
 	"github.com/spf13/pflag"
 )
@@ -45,6 +46,7 @@ func parseArgs() (*CLIOptions, error) {
 	source := flagSet.IPP("source", "s", nil, "The source address to pretend to be.")
 	duration := flagSet.DurationP("sleep-duration", "d", 2*time.Second, "The period of time in milliseconds to pause for when sending ARP replies")
 
+	flagSet.Usage = util.UsageFunc("arpspoofer", "", flagSet.FlagUsages())
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
 		return nil, err

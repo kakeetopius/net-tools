@@ -30,3 +30,15 @@ func GetIfaceByIP(IPAddr net.IP) (*net.Interface, error) {
 
 	return nil, fmt.Errorf("no interface connected to that network")
 }
+
+func UsageFunc(commandName, positionalArgsName, FlagHelpOutput string) func() {
+	return func() {
+		if positionalArgsName != "" {
+			fmt.Printf("Usage: %s [%s] [OPTIONS]\n", commandName, positionalArgsName)
+		} else {
+			fmt.Printf("Usage: %s [OPTIONS]\n", commandName)
+		}
+		fmt.Println("\nOptions: ")
+		fmt.Println(FlagHelpOutput)
+	}
+}

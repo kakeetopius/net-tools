@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jsimonetti/rtnetlink/rtnl"
+	"github.com/kakeetopius/net-tools/internal/util"
 	"github.com/spf13/pflag"
 )
 
@@ -71,6 +72,7 @@ func parseArgs() (*Options, error) {
 	flagSet := pflag.NewFlagSet("changemac", pflag.ContinueOnError)
 	iface := flagSet.StringP("iface", "i", "", "The interface to change mac address for")
 	mac := flagSet.StringP("mac", "m", "", "The Mac address to set to the interface")
+	flagSet.Usage = util.UsageFunc("changemac", "", flagSet.FlagUsages())
 
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {

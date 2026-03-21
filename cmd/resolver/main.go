@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/kakeetopius/net-tools/internal/util"
 	"github.com/pterm/pterm"
 	"github.com/spf13/pflag"
 )
@@ -138,6 +139,8 @@ func parseArgs() ([]string, Options, error) {
 	flagSet := pflag.NewFlagSet("resolver", pflag.ExitOnError)
 	reverseLookup := flagSet.BoolP("reverse", "r", false, "Perform a reverse lookup for the given IP(s).")
 	json := flagSet.BoolP("json", "j", false, "Output the results in json form")
+	flagSet.Usage = util.UsageFunc("resolver", "queries", flagSet.FlagUsages())
+
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
 		return nil, Options{}, err
