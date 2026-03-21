@@ -50,5 +50,4 @@
 
 ## TODO on available tools
 
-- arpspoofer: Improve on API interface to take in a struct instead of many paramaters.
-- resolver: Add a usage function and also option to do reverse lookup.
+- macchanger: Random mac address generator

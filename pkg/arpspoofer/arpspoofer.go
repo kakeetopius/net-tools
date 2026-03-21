@@ -12,18 +12,26 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/kakeetopius/net-tools/internal/util"
 	"github.com/pterm/pterm"
 	"golang.org/x/sys/unix"
 )
 
 var packetCount = 0
 
-func Spoof(target net.IP, targetMac net.HardwareAddr, source net.IP, sleepDuration time.Duration) error {
-	iface, err := getIfaceByIP(target)
+type SpoofOptions struct {
+	TargetIP      net.IP
+	TargetMac     net.HardwareAddr
+	SourceIP      net.IP
+	SleepDuration time.Duration
+}
+
+func Spoof(opts SpoofOptions) error {
+	iface, err := util.GetIfaceByIP(opts.TargetIP)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Spoofing host %v on interface %v\n", target.String(), iface.Name)
+	fmt.Printf("Spoofing host %v on interface %v\n", opts.TargetIP.String(), iface.Name)
 
 	notifyChan := make(chan struct{})
 	go awaitSignal(notifyChan)
@@ -34,39 +42,14 @@ func Spoof(target net.IP, targetMac net.HardwareAddr, source net.IP, sleepDurati
 		cancel()
 	}()
 
-	err = sendArpPackets(ctx, iface, &source, &target, &targetMac, sleepDuration)
+	err = sendArpPackets(ctx, iface, &opts)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func getIfaceByIP(IPAddr net.IP) (*net.Interface, error) {
-	allIfaces, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, iface := range allIfaces {
-		addrs, err := iface.Addrs()
-		if err != nil {
-			return nil, err
-		}
-		for _, addr := range addrs {
-			addr, ok := addr.(*net.IPNet)
-			if !ok {
-				return nil, fmt.Errorf("error parsing Interface IP address")
-			}
-			if addr.Contains(IPAddr) {
-				return &iface, nil
-			}
-		}
-	}
-
-	return nil, fmt.Errorf("no interface connected to that network")
-}
-
-func sendArpPackets(ctx context.Context, iface *net.Interface, srcIP *net.IP, dstIP *net.IP, dstMac *net.HardwareAddr, sleepDuration time.Duration) error {
+func sendArpPackets(ctx context.Context, iface *net.Interface, opts *SpoofOptions) error {
 	sockfd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_RAW, Htons(unix.ETH_P_ARP))
 	if err != nil {
 		return err
@@ -78,7 +61,7 @@ func sendArpPackets(ctx context.Context, iface *net.Interface, srcIP *net.IP, ds
 
 	eth := &layers.Ethernet{
 		SrcMAC:       iface.HardwareAddr,
-		DstMAC:       *dstMac,
+		DstMAC:       opts.TargetMac,
 		EthernetType: layers.EthernetTypeARP,
 	}
 
@@ -90,19 +73,19 @@ func sendArpPackets(ctx context.Context, iface *net.Interface, srcIP *net.IP, ds
 		ProtAddressSize: 4,
 
 		SourceHwAddress:   iface.HardwareAddr,
-		SourceProtAddress: srcIP.To4(),
+		SourceProtAddress: opts.SourceIP.To4(),
 
-		DstHwAddress:   *dstMac,
-		DstProtAddress: dstIP.To4(),
+		DstHwAddress:   opts.TargetMac,
+		DstProtAddress: opts.TargetIP.To4(),
 	}
 
 	buf := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{
+	serializeOpts := gopacket.SerializeOptions{
 		FixLengths:       true,
 		ComputeChecksums: false,
 	}
 
-	err = gopacket.SerializeLayers(buf, opts, eth, arp)
+	err = gopacket.SerializeLayers(buf, serializeOpts, eth, arp)
 	if err != nil {
 		return err
 	}
@@ -127,7 +110,7 @@ func sendArpPackets(ctx context.Context, iface *net.Interface, srcIP *net.IP, ds
 			}
 			packetCount++
 			area.Update(pterm.Sprintf("Packets Sent: %v", packetCount))
-			time.Sleep(sleepDuration)
+			time.Sleep(opts.SleepDuration)
 		}
 	}
 }

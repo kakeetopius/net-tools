@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-type Options struct {
+type CLIOptions struct {
 	Target        net.IP
 	TargetMac     net.HardwareAddr
 	Source        net.IP
@@ -27,13 +27,18 @@ func main() {
 		return
 	}
 
-	err = arpspoofer.Spoof(opts.Target, opts.TargetMac, opts.Source, opts.SleepDuration)
+	err = arpspoofer.Spoof(arpspoofer.SpoofOptions{
+		TargetIP:      opts.Target,
+		TargetMac:     opts.TargetMac,
+		SourceIP:      opts.Source,
+		SleepDuration: opts.SleepDuration,
+	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v", err)
 	}
 }
 
-func parseArgs() (*Options, error) {
+func parseArgs() (*CLIOptions, error) {
 	flagSet := pflag.NewFlagSet("arpspoofer", pflag.ExitOnError)
 	target := flagSet.IPP("target", "t", nil, "The IPv4 address of the target")
 	targetMac := flagSet.StringP("target-mac", "m", "", "The MAC address of the target.")
@@ -46,13 +51,13 @@ func parseArgs() (*Options, error) {
 	}
 
 	if !flagSet.Changed("target") {
-		return nil, fmt.Errorf("please provide IP address of target. Use arpspoofer -h for more information")
+		return nil, fmt.Errorf("please provide IP address of target")
 	}
 	if !flagSet.Changed("source") {
-		return nil, fmt.Errorf("please provide source IP address. Use arpspoofer -h for more information")
+		return nil, fmt.Errorf("please provide source IP address you want to pretend to be")
 	}
 	if !flagSet.Changed("target-mac") {
-		return nil, fmt.Errorf("please provide source target mac address. Use arpspoofer -h for more information")
+		return nil, fmt.Errorf("please provide the target's mac address")
 	}
 
 	mac, err := net.ParseMAC(*targetMac)
@@ -60,7 +65,7 @@ func parseArgs() (*Options, error) {
 		return nil, err
 	}
 
-	return &Options{
+	return &CLIOptions{
 		Target:        *target,
 		TargetMac:     mac,
 		Source:        *source,
