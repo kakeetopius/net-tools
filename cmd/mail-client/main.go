@@ -22,14 +22,14 @@ func main() {
 	mailOptions, err := getParams()
 	if err != nil {
 		if err != pflag.ErrHelp {
-			fmt.Println(err)
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		}
 		return
 	}
 
 	err = sendMail(mailOptions)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 }

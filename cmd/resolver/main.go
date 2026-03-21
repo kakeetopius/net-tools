@@ -28,7 +28,7 @@ func main() {
 	var err error
 	queries, opts, err := parseArgs()
 	if err != nil {
-		fmt.Println("Error: ", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 
@@ -38,12 +38,12 @@ func main() {
 		results, err = resolve(queries)
 	}
 	if err != nil {
-		fmt.Println("Error: ", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 	err = printResults(results, &opts)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 	}
 }
 
@@ -95,6 +95,9 @@ func reverseLookup(queries []string) ([]Result, error) {
 }
 
 func printResults(results []Result, opts *Options) error {
+	if len(results) == 0 {
+		return nil
+	}
 	if opts.PrintJSON {
 		jsonResults, err := json.MarshalIndent(results, "", "  ")
 		if err != nil {
@@ -104,20 +107,30 @@ func printResults(results []Result, opts *Options) error {
 		return nil
 	}
 
-	data := pterm.TableData{{"Query", "Response(s)", "Errors"}}
+	data := pterm.TableData{{"Query", "Response(s)"}}
+	errStr := strings.Builder{}
 	for _, result := range results {
+		if result.Err != "" {
+			fmt.Fprintf(&errStr, "%v\n", result.Err)
+			continue
+		}
+
 		answerString := strings.Builder{}
 		for _, answer := range result.Answers {
 			fmt.Fprintf(&answerString, "%v\n", answer)
 		}
-		errStr := result.Err
-		if result.Err == "" {
-			errStr = "None"
-		}
-		data = append(data, []string{result.Query, answerString.String(), errStr})
+		data = append(data, []string{result.Query, answerString.String()})
 	}
 
-	pterm.DefaultTable.WithHasHeader(true).WithBoxed(true).WithRowSeparator("-").WithHeaderRowSeparator("-").WithData(data).Render()
+	table := pterm.DefaultTable.WithHasHeader(true).WithBoxed(true).WithRowSeparator("-").WithHeaderRowSeparator("-").WithData(data)
+	if len(data) > 1 {
+		table.Render()
+	}
+	errors := errStr.String()
+	if errors != "" {
+		fmt.Println("\nErrors: ")
+		fmt.Println(errors)
+	}
 	return nil
 }
 

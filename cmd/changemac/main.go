@@ -18,26 +18,26 @@ func main() {
 	args, err := parseArgs()
 	if err != nil {
 		if err != pflag.ErrHelp {
-			fmt.Println(err)
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		}
 		return
 	}
 
 	iface, err := net.InterfaceByName(args.Interface)
 	if err != nil {
-		fmt.Printf("Error %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 
 	mac, err := net.ParseMAC(args.Mac)
 	if err != nil {
-		fmt.Printf("Error %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 
 	conn, err := rtnl.Dial(nil)
 	if err != nil {
-		fmt.Printf("Error %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 	defer conn.Close()
@@ -47,21 +47,21 @@ func main() {
 	fmt.Println("Setting interface down....")
 	err = conn.LinkDown(iface)
 	if err != nil {
-		fmt.Printf("Error %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 
 	fmt.Println("Changing mac address for Interface ", iface.Name, " to ", args.Mac)
 	err = conn.LinkSetHardwareAddr(iface, mac)
 	if err != nil {
-		fmt.Printf("Error %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 
 	fmt.Println("Setting interface up....")
 	err = conn.LinkUp(iface)
 	if err != nil {
-		fmt.Printf("Error %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 	fmt.Println("Successful")

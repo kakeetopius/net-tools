@@ -1,7 +1,5 @@
 ## Addition tools to add in the future.
 
-- tool to get domain information from whois database.
-- ipcalc: Calculate network ranges, broadcast addresses, and subnet masks.
 - mac-vendor-lookup: Identify device manufacturers from MAC addresses.
 - bandwidth-monitor: Monitor and display network bandwidth usage.
 - wake-on-lan: Send Wake-on-LAN magic packets to power on machines remotely.

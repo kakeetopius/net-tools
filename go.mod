@@ -3,6 +3,7 @@ module github.com/kakeetopius/net-tools
 go 1.25.5
 
 require (
+	github.com/endobit/oui v0.7.0
 	github.com/google/gopacket v1.1.19
 	github.com/jsimonetti/rtnetlink v1.4.2
 	github.com/pterm/pterm v0.12.82

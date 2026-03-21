@@ -19,7 +19,7 @@ type Options struct {
 func main() {
 	opts, err := parseArgs()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 
