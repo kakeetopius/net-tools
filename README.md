@@ -49,9 +49,7 @@ Refer to each tool's `-h` or `--help` flag for usage instructions:
 Contributions are welcome! Feel free to submit pull requests for new utilities or improvements to existing ones.
 
 ## License
-
-MIT License
-
+MIT License. See [LICENSE](LICENSE) for details.
 ```
 
 ```
