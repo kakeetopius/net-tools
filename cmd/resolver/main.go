@@ -110,7 +110,11 @@ func printResults(results []Result, opts *Options) error {
 		for _, answer := range result.Answers {
 			fmt.Fprintf(&answerString, "%v\n", answer)
 		}
-		data = append(data, []string{result.Query, answerString.String(), result.Err})
+		errStr := result.Err
+		if result.Err == "" {
+			errStr = "None"
+		}
+		data = append(data, []string{result.Query, answerString.String(), errStr})
 	}
 
 	pterm.DefaultTable.WithHasHeader(true).WithBoxed(true).WithRowSeparator("-").WithHeaderRowSeparator("-").WithData(data).Render()
