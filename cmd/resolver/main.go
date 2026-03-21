@@ -5,23 +5,36 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/pflag"
 )
 
 type Result struct {
-	DomainName string
-	Addresses  []string
-	Err        error
+	Query   string
+	Answers []string
+	Err     error
+}
+
+type Options struct {
+	ReverseLookup bool
 }
 
 func main() {
-	names, err := parseArgs()
+	var results []Result
+	var err error
+	queries, opts, err := parseArgs()
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return
 	}
-	results, err := resolve(names)
+
+	if opts.ReverseLookup {
+		results, err = reverseLookup(queries)
+	} else {
+		results, err = resolve(queries)
+	}
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return
@@ -41,33 +54,60 @@ func resolve(queries []string) ([]Result, error) {
 	for _, name := range queries {
 		addresses, err := resolver.LookupHost(ctx, name)
 		results = append(results, Result{
-			DomainName: name,
-			Addresses:  addresses,
-			Err:        err,
+			Query:   name,
+			Answers: addresses,
+			Err:     err,
+		})
+	}
+	return results, nil
+}
+
+func reverseLookup(queries []string) ([]Result, error) {
+	resolver := net.Resolver{
+		PreferGo: true,
+	}
+	results := make([]Result, 0, len(queries))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for _, addr := range queries {
+		names, err := resolver.LookupAddr(ctx, addr)
+		results = append(results, Result{
+			Query:   addr,
+			Answers: names,
+			Err:     err,
 		})
 	}
 	return results, nil
 }
 
 func printResults(results []Result) {
+	data := pterm.TableData{{"Query", "Response(s)", "Errors"}}
 	for _, result := range results {
-		fmt.Printf("Results for: %v\n", result.DomainName)
+		answerString := strings.Builder{}
+		for _, answer := range result.Answers {
+			fmt.Fprintf(&answerString, "%v\n", answer)
+		}
+		var errorStr string
 		if result.Err != nil {
-			fmt.Printf("Got Error: %v\n\n", result.Err)
-			continue
+			errorStr = result.Err.Error()
+		} else {
+			errorStr = "None"
 		}
-		for _, ip := range result.Addresses {
-			fmt.Println(ip)
-		}
-		fmt.Println()
+		data = append(data, []string{result.Query, answerString.String(), errorStr})
 	}
+
+	pterm.DefaultTable.WithHasHeader(true).WithBoxed(true).WithRowSeparator("-").WithHeaderRowSeparator("-").WithData(data).Render()
 }
 
-func parseArgs() ([]string, error) {
+func parseArgs() ([]string, Options, error) {
 	flagSet := pflag.NewFlagSet("resolver", pflag.ExitOnError)
+	reverseLookup := flagSet.BoolP("reverse", "r", false, "Perform a reverse lookup for the given IP(s).")
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
-		return nil, err
+		return nil, Options{}, err
 	}
-	return flagSet.Args(), nil
+	return flagSet.Args(), Options{
+		ReverseLookup: *reverseLookup,
+	}, nil
 }
