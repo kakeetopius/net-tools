@@ -18,11 +18,15 @@ Clone the repository and build the tools:
 ```sh
 git clone https://github.com/kakeetopius/net-tools.git
 cd net-tools
+```
+Build a particular tool:
 
-go build cmd/tool_name
-#eg
-go build cmd/http-server
-
+```sh
+go build ./cmd/tool_name
+```
+For Example
+```sh
+go build ./cmd/http-server
 ```
 
 ## Usage
