@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/pflag"
 )
 
@@ -22,14 +23,17 @@ func main() {
 		return
 	}
 
-	log.Printf("Serving files in directory: %v", opts.Directory)
-	log.Printf("Starting Server on %v:%v", opts.Address, opts.Port)
+	mux := http.NewServeMux()
+	address := fmt.Sprintf("%v:%v", opts.Address, opts.Port)
+
+	logger := pterm.DefaultLogger.WithLevel(pterm.LogLevelTrace)
+	logger.Info(fmt.Sprintf("Serving files in directory: %v", opts.Directory))
+	logger.Info(fmt.Sprintf("Starting Server on: %v", address))
 
 	fileServer := http.FileServer(http.Dir(opts.Directory))
-	http.Handle("/", fileServer)
+	mux.Handle("/", fileServer)
 
-	address := fmt.Sprintf("%v:%v", opts.Address, opts.Port)
-	err = http.ListenAndServe(address, nil)
+	err = http.ListenAndServe(address, mux)
 	if err != nil {
 		log.Println(err)
 	}
