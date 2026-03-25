@@ -14,9 +14,11 @@ import (
 )
 
 type Result struct {
-	Query   string   `json:"query"`
-	Answers []string `json:"answers"`
-	Err     string   `json:"error,omitempty"`
+	Query string   `json:"query"`
+	Addrs []string `json:"addrs"`
+	MX    []string `json:"mx"`
+	NS    []string `json:"ns"`
+	Err   string   `json:"error,omitempty"`
 }
 
 type Options struct {
@@ -59,14 +61,44 @@ func resolve(queries []string) ([]Result, error) {
 
 	for _, name := range queries {
 		addresses, err := resolver.LookupHost(ctx, name)
-		var errStr string
+		var mxNames []string
+		var nsNames []string
+
 		if err != nil {
-			errStr = err.Error()
+			results = append(results, Result{
+				Query: name,
+				Err:   err.Error(),
+			})
+			continue
+		}
+		mx, err := resolver.LookupMX(ctx, name)
+		if err != nil {
+			results = append(results, Result{
+				Query: name,
+				Err:   err.Error(),
+			})
+			continue
+		}
+		for _, m := range mx {
+			mxNames = append(mxNames, fmt.Sprintf("%v Pref(%v)", m.Host, m.Pref))
+		}
+		ns, err := resolver.LookupNS(ctx, name)
+		for _, n := range ns {
+			nsNames = append(nsNames, fmt.Sprintf("%v ", n.Host))
+		}
+		if err != nil {
+			results = append(results, Result{
+				Query: name,
+				Err:   err.Error(),
+			})
+			continue
 		}
 		results = append(results, Result{
-			Query:   name,
-			Answers: addresses,
-			Err:     errStr,
+			Query: name,
+			Addrs: addresses,
+			MX:    mxNames,
+			NS:    nsNames,
+			Err:   "",
 		})
 	}
 	return results, nil
@@ -87,15 +119,71 @@ func reverseLookup(queries []string) ([]Result, error) {
 			errStr = err.Error()
 		}
 		results = append(results, Result{
-			Query:   addr,
-			Answers: names,
-			Err:     errStr,
+			Query: addr,
+			Addrs: names,
+			Err:   errStr,
 		})
 	}
 	return results, nil
 }
 
 func printResults(results []Result, opts *Options) error {
+	if opts.ReverseLookup {
+		return printReverseLookupResults(results, opts)
+	}
+	if len(results) == 0 {
+		return nil
+	}
+	if opts.PrintJSON {
+		jsonResults, err := json.MarshalIndent(results, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(jsonResults))
+		return nil
+	}
+
+	data := pterm.TableData{{"Type", "Response(s)"}}
+	errStr := strings.Builder{}
+	for _, result := range results {
+		if result.Err != "" {
+			fmt.Fprintf(&errStr, "%v\n", result.Err)
+			continue
+		}
+
+		addrString := strings.Builder{}
+		mxString := strings.Builder{}
+		nsString := strings.Builder{}
+		for _, answer := range result.Addrs {
+			fmt.Fprintf(&addrString, "%v\n", answer)
+		}
+		for _, mx := range result.MX {
+			fmt.Fprintf(&mxString, "%v\n", mx)
+		}
+		for _, ns := range result.NS {
+			fmt.Fprintf(&nsString, "%v\n", ns)
+		}
+		style := pterm.NewStyle(pterm.Bold, pterm.FgBlue)
+		name := style.Sprint(result.Query)
+		data = append(data, []string{name})
+		data = append(data, []string{"A or\nAAAA", addrString.String()})
+		data = append(data, []string{"MX", mxString.String()})
+		data = append(data, []string{"NS", nsString.String()})
+	}
+
+	table := pterm.DefaultTable.WithHasHeader(true).WithBoxed(true).WithRowSeparator("-").WithHeaderRowSeparator("-").WithData(data)
+	if len(data) > 1 {
+		table.Render()
+	}
+	errors := errStr.String()
+	if errors != "" {
+		fmt.Println("\nErrors: ")
+		fmt.Println(errors)
+	}
+	return nil
+}
+
+func printReverseLookupResults(results []Result, opts *Options) error {
 	if len(results) == 0 {
 		return nil
 	}
@@ -116,11 +204,11 @@ func printResults(results []Result, opts *Options) error {
 			continue
 		}
 
-		answerString := strings.Builder{}
-		for _, answer := range result.Answers {
-			fmt.Fprintf(&answerString, "%v\n", answer)
+		addrString := strings.Builder{}
+		for _, answer := range result.Addrs {
+			fmt.Fprintf(&addrString, "%v\n", answer)
 		}
-		data = append(data, []string{result.Query, answerString.String()})
+		data = append(data, []string{result.Query, addrString.String()})
 	}
 
 	table := pterm.DefaultTable.WithHasHeader(true).WithBoxed(true).WithRowSeparator("-").WithHeaderRowSeparator("-").WithData(data)
