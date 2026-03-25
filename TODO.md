@@ -1,10 +1,11 @@
 ## Addition tools to add in the future.
 
-- mac-vendor-lookup: Identify device manufacturers from MAC addresses.
+- simple http-client
+- bridge manager: manage linux bridges easily (creating bridges, adding interfaces, removing interfaces, listing interfaces connected to bridge, bridge stats)
 - bandwidth-monitor: Monitor and display network bandwidth usage.
+- snmp-client: Query devices for snmp info
 - wake-on-lan: Send Wake-on-LAN magic packets to power on machines remotely.
 - mtr-clone: Combine ping and traceroute for real-time network path analysis.
-- network-speed-test: Measure upload/download speed to a remote server.
 - dhcp-discover: Send DHCP discovery packets to find DHCP servers.
 - multicast-tester: Send and receive multicast packets for network testing.
 - icmp-tunnel: Tunnel data over ICMP (ping) packets.
@@ -13,7 +14,6 @@
 - link-stats: Display detailed interface statistics (netlink).
 - snmp-walk: Perform SNMP walk to enumerate available OIDs
 - upnp-scanner: Discover and enumerate UPnP devices on the network
-- bridge manager: manage linux bridges easily.
 - vlan manager: tool to manage vlan interfaces (Linux only)
 - netns-manager: Create and manage Linux network namespaces (netlink).
 - tc-qdisc-tool: Configure traffic control (qdisc, classes, filters) for shaping/bandwidth limiting (netlink).
