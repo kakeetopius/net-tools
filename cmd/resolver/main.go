@@ -59,6 +59,10 @@ func resolve(queries []string) ([]Result, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	spinner, err := pterm.DefaultSpinner.Start("Resolving")
+	if err != nil {
+		return nil, err
+	}
 	for _, name := range queries {
 		addresses, err := resolver.LookupHost(ctx, name)
 		var mxNames []string
@@ -101,6 +105,7 @@ func resolve(queries []string) ([]Result, error) {
 			Err:   "",
 		})
 	}
+	spinner.Stop()
 	return results, nil
 }
 
@@ -163,7 +168,7 @@ func printResults(results []Result, opts *Options) error {
 		for _, ns := range result.NS {
 			fmt.Fprintf(&nsString, "%v\n", ns)
 		}
-		style := pterm.NewStyle(pterm.Bold, pterm.FgBlue)
+		style := pterm.NewStyle(pterm.Bold, pterm.FgLightBlue)
 		name := style.Sprint(result.Query)
 		data = append(data, []string{name})
 		data = append(data, []string{"A or\nAAAA", addrString.String()})
@@ -227,7 +232,7 @@ func parseArgs() ([]string, Options, error) {
 	flagSet := pflag.NewFlagSet("resolver", pflag.ExitOnError)
 	reverseLookup := flagSet.BoolP("reverse", "r", false, "Perform a reverse lookup for the given IP(s).")
 	json := flagSet.BoolP("json", "j", false, "Output the results in json form")
-	flagSet.Usage = util.UsageFunc("resolver", "queries", flagSet.FlagUsages())
+	flagSet.Usage = util.UsageFunc("resolver", "queries...", flagSet.FlagUsages())
 
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
