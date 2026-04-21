@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/user"
-	"path"
 	"strings"
 
 	"github.com/kakeetopius/net-tools/internal/util"
@@ -134,33 +132,17 @@ func sendMail(mailOptions *MailOptions) error {
 }
 
 func NewConfig(configFile string) (*viper.Viper, error) {
-	home := ""
-	if os.Geteuid() == 0 {
-		// running as root
-		sudoUser := os.Getenv("SUDO_USER")
-		if sudoUser == "" {
-			return nil, fmt.Errorf("could not get sudo user variable")
-		}
-		u, err := user.Lookup(sudoUser)
-		if err != nil {
-			return nil, err
-		}
-		home = u.HomeDir
-	} else {
-		h, err := os.UserHomeDir()
-		if err != nil {
-			return nil, err
-		}
-		home = h
-	}
-
 	config := viper.New()
 	if configFile != "" {
 		config.SetConfigFile(configFile)
 	} else {
 		config.SetConfigName("mail")
 		config.SetConfigType("toml")
-		config.AddConfigPath(path.Join(home, ".config"))
+		configDir, err := os.UserConfigDir()
+		if err != nil {
+			return nil, err
+		}
+		config.AddConfigPath(configDir)
 		config.AddConfigPath(".")
 	}
 
