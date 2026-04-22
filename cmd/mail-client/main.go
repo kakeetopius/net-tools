@@ -41,17 +41,18 @@ func main() {
 func getOptions() (MailOptions, error) {
 	flagSet := pflag.NewFlagSet("mail-client", pflag.ContinueOnError)
 
+	flagSet.SortFlags = false
 	flagSet.StringP("from", "f", "", "The address of the sender.")
-	flagSet.StringP("password", "p", "", "The password (app password for smarthost) to use.")
-	flagSet.StringP("username", "u", "", "The username to use when sending the mail.")
 	flagSet.StringP("to", "t", "", "Email Address to send mail To.")
+	flagSet.StringP("username", "u", "", "The username to use when sending the mail.")
+	flagSet.StringP("password", "p", "", "The password (app password for smarthost) to use.")
 	flagSet.StringP("subject", "s", "", "The Subject of the Mail")
 	flagSet.StringP("message", "m", "", "The message to send in e-mail")
 
-	configFile := flagSet.StringP("config", "c", "", "The config file to use.")
+	configFile := flagSet.StringP("config", "c", "", "The config file to use. (default is a file called mail.toml in the user's config directory)")
 	interactive := flagSet.BoolP("interactive", "i", false, "Prompt the user for the mail options")
 
-	flagSet.Usage = util.UsageFunc("mail-client", "", flagSet.FlagUsages())
+	flagSet.Usage = util.UsageFunc("mail-client", "", flagSet.FlagUsages(), "Send e-mails directly from your terminal.")
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
 		return MailOptions{}, err

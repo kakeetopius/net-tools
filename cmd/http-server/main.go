@@ -44,8 +44,8 @@ func parseArgs() (*Options, error) {
 	flagSet := pflag.NewFlagSet("server", pflag.ExitOnError)
 	dir := flagSet.StringP("dir", "d", ".", "The directory to serve http files from.")
 	port := flagSet.IntP("port", "p", 4020, "The port to listen on.")
-	address := flagSet.IPP("address", "a", nil, "The address to listen on. (Default is all address)")
-	flagSet.Usage = util.UsageFunc("http-server", "", flagSet.FlagUsages())
+	address := flagSet.IPP("address", "a", nil, "The address to listen on. (Default is all addresses)")
+	flagSet.Usage = util.UsageFunc("http-server", "", flagSet.FlagUsages(), "Serve static files in a specified directory.")
 
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {

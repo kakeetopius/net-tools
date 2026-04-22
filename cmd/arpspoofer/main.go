@@ -46,7 +46,7 @@ func parseArgs() (*CLIOptions, error) {
 	source := flagSet.IPP("source", "s", nil, "The source address to pretend to be.")
 	duration := flagSet.DurationP("sleep-duration", "d", 2*time.Second, "The period of time in milliseconds to pause for when sending ARP replies")
 
-	flagSet.Usage = util.UsageFunc("arpspoofer", "", flagSet.FlagUsages())
+	flagSet.Usage = util.UsageFunc("arpspoofer", "", flagSet.FlagUsages(), "Carry out ARP spoof attacks.")
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
 		return nil, err

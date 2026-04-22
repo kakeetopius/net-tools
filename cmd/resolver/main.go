@@ -232,7 +232,7 @@ func parseArgs() ([]string, Options, error) {
 	flagSet := pflag.NewFlagSet("resolver", pflag.ExitOnError)
 	reverseLookup := flagSet.BoolP("reverse", "r", false, "Perform a reverse lookup for the given IP(s).")
 	json := flagSet.BoolP("json", "j", false, "Output the results in json form")
-	flagSet.Usage = util.UsageFunc("resolver", "queries...", flagSet.FlagUsages())
+	flagSet.Usage = util.UsageFunc("resolver", "queries...", flagSet.FlagUsages(), "Resolve hostname(s) or do reverse lookups.")
 
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
