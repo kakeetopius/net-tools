@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/kakeetopius/net-tools/internal/util"
 	"github.com/pterm/pterm"
 	"github.com/spf13/pflag"
@@ -22,12 +24,15 @@ type MailOptions struct {
 	interactive bool
 }
 
+var ErrUserQuit = errors.New("user quit")
+
 func main() {
 	mailOptions, err := getOptions()
 	if err != nil {
-		if err != pflag.ErrHelp {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		if err == pflag.ErrHelp || err == ErrUserQuit {
+			return
 		}
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 
@@ -199,10 +204,16 @@ func (o *MailOptions) AddMissingFieldsInteractively() error {
 	}
 
 	if o.Body == "" {
-		body, err := pterm.DefaultInteractiveTextInput.WithMultiLine().Show("Type the message")
+		p := tea.NewProgram(initialModel())
+		returnedModel, err := p.Run()
 		if err != nil {
 			return err
 		}
+		finalModel := returnedModel.(model)
+		if finalModel.userQuit {
+			return ErrUserQuit
+		}
+		body := finalModel.message
 		o.Body = body
 	}
 
