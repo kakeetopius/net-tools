@@ -90,17 +90,17 @@ func getOptions() (MailOptions, error) {
 	return opts, nil
 }
 
-func sendMail(mailOptions *MailOptions) error {
+func sendMail(mailOptions *MailOptions) (err error) {
 	message := mail.NewMsg()
 
-	if err := message.To(mailOptions.Receiver); err != nil {
+	if err = message.To(mailOptions.Receiver); err != nil {
 		return err
 	}
 	if mailOptions.Username != "" {
-		if err := message.FromFormat(mailOptions.Username, mailOptions.Sender); err != nil {
+		if err = message.FromFormat(mailOptions.Username, mailOptions.Sender); err != nil {
 			return err
 		}
-	} else if err := message.From(mailOptions.Sender); err != nil {
+	} else if err = message.From(mailOptions.Sender); err != nil {
 		return err
 	}
 
@@ -115,7 +115,8 @@ func sendMail(mailOptions *MailOptions) error {
 	}
 
 	if mailOptions.interactive {
-		confirm, err := pterm.DefaultInteractiveConfirm.Show("Proceed to send mail")
+		var confirm bool
+		confirm, err = pterm.DefaultInteractiveConfirm.Show("Proceed to send mail")
 		if err != nil {
 			return err
 		}
@@ -124,13 +125,21 @@ func sendMail(mailOptions *MailOptions) error {
 			return nil
 		}
 
-		spinner, err := pterm.DefaultSpinner.Start("Sending mail")
+		var spinner *pterm.SpinnerPrinter
+		spinner, err = pterm.DefaultSpinner.Start("Sending mail")
 		if err != nil {
 			return err
 		}
-		defer spinner.Stop()
+		defer func() {
+			if err == nil {
+				spinner.Success("Done")
+			} else {
+				spinner.Stop()
+			}
+		}()
+
 	}
-	if err := client.DialAndSend(message); err != nil {
+	if err = client.DialAndSend(message); err != nil {
 		return fmt.Errorf("failed to send mail: %v", err)
 	}
 
