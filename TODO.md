@@ -1,6 +1,8 @@
 ## Addition tools to add in the future.
 
+- dns-monitor: log dns queries on a system
 - simple http-client
+- ebpf based rate limiter -> attached at XDP or tc
 - bridge manager: manage linux bridges easily (creating bridges, adding interfaces, removing interfaces, listing interfaces connected to bridge, bridge stats)
 - bandwidth-monitor: Monitor and display network bandwidth usage.
 - snmp-client: Query devices for snmp info

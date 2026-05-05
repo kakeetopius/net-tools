@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -21,12 +20,7 @@ type CLIOptions struct {
 
 func main() {
 	opts, err := parseArgs()
-	if err != nil {
-		if !errors.Is(err, pflag.ErrHelp) {
-			fmt.Fprintln(os.Stderr, err)
-		}
-		return
-	}
+	util.CheckErr(err)
 
 	err = arpspoofer.Spoof(arpspoofer.SpoofOptions{
 		TargetIP:      opts.Target,
@@ -34,9 +28,7 @@ func main() {
 		SourceIP:      opts.Source,
 		SleepDuration: opts.SleepDuration,
 	})
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v", err)
-	}
+	util.CheckErr(err)
 }
 
 func parseArgs() (*CLIOptions, error) {

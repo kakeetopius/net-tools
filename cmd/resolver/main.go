@@ -30,24 +30,17 @@ func main() {
 	var results []Result
 	var err error
 	queries, opts, err := parseArgs()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 
 	if opts.ReverseLookup {
 		results, err = reverseLookup(queries)
 	} else {
 		results, err = resolve(queries)
 	}
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
+
 	err = printResults(results, &opts)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-	}
+	util.CheckErr(err)
 }
 
 func resolve(queries []string) ([]Result, error) {

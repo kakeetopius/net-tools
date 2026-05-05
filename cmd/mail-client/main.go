@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -24,23 +23,12 @@ type MailOptions struct {
 	interactive bool
 }
 
-var ErrUserQuit = errors.New("user quit")
-
 func main() {
 	mailOptions, err := getOptions()
-	if err != nil {
-		if err == pflag.ErrHelp || err == ErrUserQuit {
-			return
-		}
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 
 	err = sendMail(&mailOptions)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 }
 
 func getOptions() (MailOptions, error) {
@@ -220,7 +208,7 @@ func (o *MailOptions) AddMissingFieldsInteractively() error {
 		}
 		finalModel := returnedModel.(model)
 		if finalModel.userQuit {
-			return ErrUserQuit
+			return util.ErrUserQuit
 		}
 		body := finalModel.message
 		o.Body = body

@@ -25,17 +25,11 @@ type Options struct {
 
 func main() {
 	macs, opts, err := parseArgs()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 
 	results := lookupVendors(macs)
 	err = printResults(results, opts)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 }
 
 func lookupVendors(macs []string) []Result {

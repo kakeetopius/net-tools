@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -19,10 +18,7 @@ type Options struct {
 
 func main() {
 	opts, err := parseArgs()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 
 	mux := http.NewServeMux()
 	address := fmt.Sprintf("%v:%v", opts.Address, opts.Port)
@@ -35,9 +31,7 @@ func main() {
 	mux.Handle("/", fileServer)
 
 	err = http.ListenAndServe(address, mux)
-	if err != nil {
-		log.Println(err)
-	}
+	util.CheckErr(err)
 }
 
 func parseArgs() (*Options, error) {

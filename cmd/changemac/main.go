@@ -17,54 +17,32 @@ type Options struct {
 
 func main() {
 	args, err := parseArgs()
-	if err != nil {
-		if err != pflag.ErrHelp {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		}
-		return
-	}
+	util.CheckErr(err)
 
 	iface, err := net.InterfaceByName(args.Interface)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 
 	mac, err := net.ParseMAC(args.Mac)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 
 	conn, err := rtnl.Dial(nil)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 	defer conn.Close()
 
 	fmt.Println("Current MAC: ", iface.HardwareAddr.String())
 
 	fmt.Println("Setting interface down....")
 	err = conn.LinkDown(iface)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 
 	fmt.Println("Changing mac address for Interface ", iface.Name, " to ", args.Mac)
 	err = conn.LinkSetHardwareAddr(iface, mac)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
 
 	fmt.Println("Setting interface up....")
 	err = conn.LinkUp(iface)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return
-	}
+	util.CheckErr(err)
+
 	fmt.Println("Successful")
 }
 
