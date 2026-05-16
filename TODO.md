@@ -47,7 +47,3 @@
 - email-spf-dkim-check: Check SPF and DKIM records for email security
 - weak-ssl-protocol-check: Detect use of weak SSL/TLS protocols
 - public-s3-bucket-finder: Check if S3 buckets are publicly accessible
-
-## TODO on available tools
-
-- macchanger: Random mac address generator

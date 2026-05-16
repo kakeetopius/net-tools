@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"fmt"
 	"net"
 	"os"
@@ -13,58 +14,100 @@ import (
 type Options struct {
 	Interface string
 	Mac       string
+	Random    bool
 }
 
 func main() {
-	args, err := parseArgs()
+	opts, err := parseArgs()
 	util.CheckErr(err)
 
-	iface, err := net.InterfaceByName(args.Interface)
+	var mac net.HardwareAddr
+	if opts.Random {
+		mac, err = genRandomMac()
+		util.CheckErr(err)
+	} else if opts.Mac != "" {
+		mac, err = net.ParseMAC(opts.Mac)
+		util.CheckErr(err)
+	} else {
+		fmt.Fprintln(os.Stderr, "please provide a new mac address. Use changemac -h for more information.")
+		return
+	}
+
+	iface, err := net.InterfaceByName(opts.Interface)
 	util.CheckErr(err)
 
-	mac, err := net.ParseMAC(args.Mac)
+	err = changeMac(iface, mac)
 	util.CheckErr(err)
+}
 
+func changeMac(iface *net.Interface, mac net.HardwareAddr) error {
 	conn, err := rtnl.Dial(nil)
-	util.CheckErr(err)
+	if err != nil {
+		return err
+	}
 	defer conn.Close()
 
 	fmt.Println("Current MAC: ", iface.HardwareAddr.String())
 
 	fmt.Println("Setting interface down....")
 	err = conn.LinkDown(iface)
-	util.CheckErr(err)
+	if err != nil {
+		return err
+	}
 
-	fmt.Println("Changing mac address for Interface ", iface.Name, " to ", args.Mac)
+	fmt.Println("Changing mac address for Interface ", iface.Name, " to ", mac)
 	err = conn.LinkSetHardwareAddr(iface, mac)
-	util.CheckErr(err)
+	if err != nil {
+		return err
+	}
 
 	fmt.Println("Setting interface up....")
 	err = conn.LinkUp(iface)
-	util.CheckErr(err)
+	if err != nil {
+		return err
+	}
 
-	fmt.Println("Successful")
+	fmt.Println("MAC successfully changed")
+	return nil
+}
+
+func genRandomMac() ([]byte, error) {
+	mac := make([]byte, 6)
+
+	_, err := rand.Read(mac)
+	if err != nil {
+		return nil, err
+	}
+
+	// clear multicast (bit 0 - LSB)
+	mac[0] &= 0xfe
+	// set locally administered
+	mac[0] |= 0x02
+
+	return mac, nil
 }
 
 func parseArgs() (*Options, error) {
+	opts := Options{}
+
 	flagSet := pflag.NewFlagSet("changemac", pflag.ContinueOnError)
-	iface := flagSet.StringP("iface", "i", "", "The interface to change mac address for")
-	mac := flagSet.StringP("mac", "m", "", "The Mac address to set on the interface")
+	flagSet.StringVarP(&opts.Interface, "iface", "i", "", "The interface to change mac address for")
+	flagSet.StringVarP(&opts.Mac, "mac", "m", "", "The Mac address to set on the interface")
+	flagSet.BoolVarP(&opts.Random, "random", "r", false, "Generate new random mac address.")
+
 	flagSet.Usage = util.UsageFunc("changemac", "", flagSet.FlagUsages(), "Change the mac address of a linux network interface")
 
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
 		return nil, err
 	}
-	if !flagSet.Changed("iface") {
+
+	if opts.Interface == "" {
 		return nil, fmt.Errorf("no interface given. Use changemac -h for help")
 	}
-	if !flagSet.Changed("mac") {
-		return nil, fmt.Errorf("no mac address given. Use changemac -h for help")
+	if opts.Mac == "" && !opts.Random {
+		return nil, fmt.Errorf("please provide new mac address")
 	}
 
-	return &Options{
-		Interface: *iface,
-		Mac:       *mac,
-	}, nil
+	return &opts, nil
 }
