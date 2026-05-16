@@ -12,6 +12,8 @@ import (
 
 var ErrUserQuit = errors.New("user quit")
 
+// GetIfaceByIP returns the first network interface that has an IP network
+// containing the provided IP address.
 func GetIfaceByIP(IPAddr net.IP) (*net.Interface, error) {
 	allIfaces, err := net.Interfaces()
 	if err != nil {
@@ -37,6 +39,8 @@ func GetIfaceByIP(IPAddr net.IP) (*net.Interface, error) {
 	return nil, fmt.Errorf("no interface connected to that network")
 }
 
+// UsageFunc returns a function that prints usage, description, and option
+// information for a command.
 func UsageFunc(commandName, positionalArgsName, flagHelpOutput, description string) func() {
 	return func() {
 		if positionalArgsName != "" && flagHelpOutput != "" {
