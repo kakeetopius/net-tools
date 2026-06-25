@@ -1,5 +1,7 @@
 ## Addition tools to add in the future.
 
+- ipv6 router solicitor
+- access-point via netlink
 - dns-monitor: log dns queries on a system
 - simple http-client
 - ebpf based rate limiter -> attached at XDP or tc
