@@ -31,6 +31,10 @@
 
 ## Sec-tools for another repo.
 
+- dhcp starvation tool
+- mac address flooding tool
+- encapsulate vpn traffic to evade detection
+- dtp negotiator
 - ssl-cipher-check: List supported SSL/TLS ciphers for a server
 - TLS cert insepctor
 - password brute forcer.

@@ -1,6 +1,6 @@
 # net-tools
 
-net-tools is a collection of small, single-purpose networking utilities. Each tool is a simple wrapper around Go's standard library functions (and external libraries), providing easy-to-use command-line applications for common networking tasks.
+net-tools is a collection of small, single-purpose networking utilities and libraries. Each tool/library is a simple wrapper around Go's standard library functions (and external libraries), providing easy-to-use command-line applications for common networking tasks.
 
 ## Available Tools.
 
