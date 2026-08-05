@@ -7,6 +7,7 @@ require (
 	charm.land/bubbletea/v2 v2.0.6
 	charm.land/lipgloss/v2 v2.0.3
 	github.com/endobit/oui v0.7.0
+	github.com/google/go-querystring v1.2.0
 	github.com/google/gopacket v1.1.19
 	github.com/jsimonetti/rtnetlink v1.4.2
 	github.com/pterm/pterm v0.12.82
