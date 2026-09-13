@@ -60,6 +60,8 @@ func UsageFunc(commandName, positionalArgsName, flagHelpOutput, description stri
 		if flagHelpOutput != "" {
 			fmt.Println("\nOptions: ")
 			fmt.Println(flagHelpOutput)
+		} else {
+			fmt.Println()
 		}
 	}
 }

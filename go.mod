@@ -10,6 +10,7 @@ require (
 	github.com/google/go-querystring v1.2.0
 	github.com/google/gopacket v1.1.19
 	github.com/jsimonetti/rtnetlink v1.4.2
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pterm/pterm v0.12.82
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
